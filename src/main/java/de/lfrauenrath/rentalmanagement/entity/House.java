@@ -1,21 +1,27 @@
 package de.lfrauenrath.rentalmanagement.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "house")
+@DiscriminatorValue("HOUSE")
 public class House extends RentalProperty {
+
+    @Column(name = "land_size")
     private double landSize;
-    private double livingArea;
+    @Column(name = "room_count")
     private int roomCount;
+    @Column(name = "is_entire_house_rented")
     private boolean isEntireHouseRented;
 
     @OneToMany(mappedBy = "house", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Apartment> apartments;
 
     public double getLandSize() {
@@ -27,12 +33,10 @@ public class House extends RentalProperty {
     }
 
     public double getLivingArea() {
-        this.livingArea = this.apartments.stream().mapToDouble(Apartment::getLivingArea).sum();
-        return livingArea;
-    }
-
-    public void setLivingArea(double livingArea) {
-        this.livingArea = livingArea;
+        if (apartments == null) {
+            return super.getLivingArea(); // Falls keine Apartments vorhanden sind, gib den gespeicherten Wert zurück
+        }
+        return this.apartments.stream().mapToDouble(Apartment::getLivingArea).sum();
     }
 
     public int getRoomCount() {
@@ -51,8 +55,9 @@ public class House extends RentalProperty {
         isEntireHouseRented = entireHouseRented;
     }
 
+    @JsonProperty("apartments")
     public List<Apartment> getApartments() {
-        return apartments;
+        return apartments == null ? new ArrayList<>() : apartments;
     }
 
     public void setApartments(List<Apartment> apartments) {

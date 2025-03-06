@@ -14,11 +14,13 @@ public class FinalizedUtilityStatement {
     @JoinColumn(name = "utility_statement_id")
     private UtilityStatement utilityStatement;
     @ManyToOne
-    @JoinColumn(name = "rental_property_id")
-    private RentalProperty rentalProperty;
+    @JoinColumn(name = "rental_contract_id")
+    private RentalContract rentalContract;
     @OneToMany(mappedBy = "finalizedStatement", cascade = CascadeType.ALL)
     private List<FinalizedUtilityCost> finalizedUtilityCosts;
+    @Column(name = "individual_cost")
     private double individualCost;
+    @Column(name = "breakdown")
     private String breakdown;
 
     public Long getId() {
@@ -37,12 +39,12 @@ public class FinalizedUtilityStatement {
         this.utilityStatement = utilityStatement;
     }
 
-    public RentalProperty getRentalProperty() {
-        return rentalProperty;
+    public RentalContract getRentalContract() {
+        return rentalContract;
     }
 
-    public void setRentalProperty(RentalProperty rentalProperty) {
-        this.rentalProperty = rentalProperty;
+    public void setRentalContract(RentalContract rentalContract) {
+        this.rentalContract = rentalContract;
     }
 
     public List<FinalizedUtilityCost> getFinalizedUtilityCosts() {

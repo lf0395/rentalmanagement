@@ -2,6 +2,7 @@ package de.lfrauenrath.rentalmanagement.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -10,13 +11,17 @@ public class UtilityStatement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "year")
     private int year;
     @ManyToOne
     @JoinColumn(name = "rental_property_id")
     private RentalProperty rentalProperty;
+    @Column(name = "total_cost")
     private double totalCost;
     @OneToMany(mappedBy = "utilityStatement", cascade = CascadeType.ALL)
-    private List<UtilityCost> utilityCosts;
+    private List<UtilityCost> utilityCosts = new ArrayList<>();
+    @Column(name = "is_finalized")
+    private boolean isFinalized;
 
     public Long getId() {
         return id;
@@ -43,7 +48,8 @@ public class UtilityStatement {
     }
 
     public double getTotalCost() {
-        return totalCost;
+        this.totalCost = this.utilityCosts.stream().mapToDouble(UtilityCost::getPrice).sum();
+        return this.totalCost;
     }
 
     public void setTotalCost(double totalCost) {
@@ -56,5 +62,22 @@ public class UtilityStatement {
 
     public void setUtilityCosts(List<UtilityCost> utilityCosts) {
         this.utilityCosts = utilityCosts;
+    }
+
+    public boolean isFinalized() {
+        return isFinalized;
+    }
+
+    public void setFinalized(boolean finalized) {
+        isFinalized = finalized;
+    }
+
+    public void setRentalPropertyId(Long id) {
+        if (id != null) {
+            this.rentalProperty = new Apartment();
+            this.rentalProperty.setId(id);
+        } else {
+            this.rentalProperty = null;
+        }
     }
 }

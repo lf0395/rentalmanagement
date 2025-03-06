@@ -1,190 +1,195 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="create-tables" author="dev">
-        <createTable tableName="rental_property">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="city" type="VARCHAR(255)"/>
-            <column name="houseNumber" type="VARCHAR(255)"/>
-            <column name="street" type="VARCHAR(255)"/>
-            <column name="zipCode" type="VARCHAR(255)"/>
-        </createTable>
+    <changeSet id="1" author="lfrauenrath">
 
-        <createTable tableName="house">
-            <column name="id" type="BIGINT">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="landSize" type="FLOAT"/>
-            <column name="livingArea" type="FLOAT"/>
-            <column name="roomCount" type="INT"/>
-            <column name="isEntireHouseRented" type="BOOLEAN"/>
-        </createTable>
-
-        <createTable tableName="apartment">
-            <column name="id" type="BIGINT">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="livingArea" type="FLOAT"/>
-            <column name="roomCount" type="INT"/>
-            <column name="house_id" type="BIGINT"/>
-        </createTable>
-
-        <createTable tableName="rental_contract">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="coldRent" type="FLOAT"/>
-            <column name="warmRent" type="FLOAT"/>
-            <column name="startDate" type="DATE"/>
-            <column name="endDate" type="DATE"/>
-            <column name="rental_property_id" type="BIGINT"/>
-        </createTable>
-
-        <createTable tableName="person">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="firstName" type="VARCHAR(255)"/>
-            <column name="lastName" type="VARCHAR(255)"/>
-            <column name="birthDate" type="DATE"/>
-            <column name="email" type="VARCHAR(255)"/>
-            <column name="rental_contract_id" type="BIGINT"/>
-        </createTable>
-
-        <createTable tableName="utility_statement">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="year" type="INT"/>
-            <column name="totalCost" type="FLOAT"/>
-            <column name="rental_property_id" type="BIGINT"/>
-        </createTable>
-
-        <createTable tableName="utility_cost">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="billingType" type="SMALLINT"/>
-            <column name="price" type="FLOAT"/>
-            <column name="date" type="DATE"/>
-            <column name="isBillable" type="BOOLEAN"/>
-            <column name="utility_statement_id" type="BIGINT"/>
-        </createTable>
-
+        <!-- Table: attachment -->
         <createTable tableName="attachment">
             <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
+                <constraints primaryKey="true"/>
             </column>
             <column name="data" type="TINYBLOB"/>
-            <column name="fileName" type="VARCHAR(255)"/>
-            <column name="fileType" type="VARCHAR(255)"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="file_type" type="VARCHAR(255)"/>
             <column name="utility_cost_id" type="BIGINT"/>
         </createTable>
 
+        <!-- Table: finalized_attachment -->
         <createTable tableName="finalized_attachment">
             <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
+                <constraints primaryKey="true"/>
             </column>
             <column name="data" type="TINYBLOB"/>
-            <column name="fileName" type="VARCHAR(255)"/>
-            <column name="fileType" type="VARCHAR(255)"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="file_type" type="VARCHAR(255)"/>
             <column name="finalized_utility_cost_id" type="BIGINT"/>
         </createTable>
 
+        <!-- Table: finalized_utility_cost -->
         <createTable tableName="finalized_utility_cost">
             <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
+                <constraints primaryKey="true"/>
             </column>
-            <column name="billingType" type="SMALLINT"/>
-            <column name="individualShare" type="FLOAT"/>
-            <column name="totalCost" type="FLOAT"/>
+            <column name="billing_type" type="SMALLINT"/>
+            <column name="individual_share" type="FLOAT"/>
+            <column name="total_cost" type="FLOAT"/>
             <column name="finalized_statement_id" type="BIGINT"/>
         </createTable>
 
+        <!-- Table: finalized_utility_statement -->
         <createTable tableName="finalized_utility_statement">
             <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
+                <constraints primaryKey="true"/>
             </column>
             <column name="breakdown" type="VARCHAR(255)"/>
-            <column name="individualCost" type="FLOAT"/>
+            <column name="individual_cost" type="FLOAT"/>
+            <column name="rental_contract_id" type="BIGINT"/>
+            <column name="utility_statement_id" type="BIGINT"/>
+            <column name="finalized_utility_statement_id" type="BIGINT"/>
+        </createTable>
+
+        <!-- Table: meter -->
+        <createTable tableName="meter">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="number" type="VARCHAR(255)"/>
+            <column name="type" type="SMALLINT"/>
             <column name="rental_property_id" type="BIGINT"/>
+        </createTable>
+
+        <!-- Table: meter_value -->
+        <createTable tableName="meter_value">
+            <column name="id" type="BIGINT"/>
+            <column name="measure_date" type="DATE"/>
+            <column name="value" type="FLOAT"/>
+            <column name="meter_id" type="BIGINT"/>
+        </createTable>
+
+        <createTable tableName="meter_value_SEQ">
+            <column name="next_val" type="BIGINT"/>
+        </createTable>
+
+        <insert tableName="meter_value_SEQ">
+            <column name="next_val" value="1"/>
+        </insert>
+
+        <!-- Table: person -->
+        <createTable tableName="person">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="birth_date" type="DATE"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="rental_contract_id" type="BIGINT"/>
+        </createTable>
+
+        <!-- Table: rent -->
+        <createTable tableName="rent">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="additional_costs" type="FLOAT"/>
+            <column name="cold_rent" type="FLOAT"/>
+            <column name="end_date" type="DATE"/>
+            <column name="start_date" type="DATE"/>
+            <column name="rental_contract_id" type="BIGINT"/>
+        </createTable>
+
+        <!-- Table: rental_contract -->
+        <createTable tableName="rental_contract">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="end_date" type="DATE"/>
+            <column name="start_date" type="DATE"/>
+            <column name="rental_property_id" type="BIGINT"/>
+        </createTable>
+
+        <!-- Table: rental_property -->
+        <createTable tableName="rental_property">
+            <column name="DTYPE" type="VARCHAR(31)" />
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="city" type="VARCHAR(255)"/>
+            <column name="house_number" type="VARCHAR(255)"/>
+            <column name="living_area" type="FLOAT"/>
+            <column name="street" type="VARCHAR(255)"/>
+            <column name="zip_code" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="room_count" type="INTEGER"/>
+            <column name="is_entire_house_rented" type="BIT"/>
+            <column name="land_size" type="FLOAT"/>
+            <column name="house_id" type="BIGINT"/>
+        </createTable>
+
+        <!-- Table: utility_cost -->
+        <createTable tableName="utility_cost">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="billing_type" type="SMALLINT"/>
+            <column name="consumption" type="FLOAT"/>
+            <column name="date" type="DATE"/>
+            <column name="is_billable" type="BIT"/>
+            <column name="meterType" type="SMALLINT"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="price" type="FLOAT"/>
             <column name="utility_statement_id" type="BIGINT"/>
         </createTable>
+
+        <!-- Table: utility_statement -->
+        <createTable tableName="utility_statement">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="total_cost" type="FLOAT"/>
+            <column name="year" type="INTEGER"/>
+            <column name="rental_property_id" type="BIGINT"/>
+            <column name="is_finalized" type="BIT"/>
+        </createTable>
+
+        <!-- Foreign Keys -->
+        <addForeignKeyConstraint baseTableName="attachment" baseColumnNames="utility_cost_id"
+                                 referencedTableName="utility_cost" referencedColumnNames="id" constraintName="FK_attachment_utility_cost"/>
+
+        <addForeignKeyConstraint baseTableName="finalized_attachment" baseColumnNames="finalized_utility_cost_id"
+                                 referencedTableName="finalized_utility_cost" referencedColumnNames="id" constraintName="FK_finalized_attachment_utility_cost"/>
+
+        <addForeignKeyConstraint baseTableName="finalized_utility_cost" baseColumnNames="finalized_statement_id"
+                                 referencedTableName="finalized_utility_statement" referencedColumnNames="id" constraintName="FK_finalized_utility_cost_statement"/>
+
+        <addForeignKeyConstraint baseTableName="finalized_utility_statement" baseColumnNames="rental_contract_id"
+                                 referencedTableName="rental_contract" referencedColumnNames="id" constraintName="FK_finalized_utility_statement_contract"/>
+
+        <addForeignKeyConstraint baseTableName="finalized_utility_statement" baseColumnNames="utility_statement_id"
+                                 referencedTableName="utility_statement" referencedColumnNames="id" constraintName="FK_finalized_utility_statement_utilstatement"/>
+
+        <addForeignKeyConstraint baseTableName="meter" baseColumnNames="rental_property_id"
+                                 referencedTableName="rental_property" referencedColumnNames="id" constraintName="FK_meter_property"/>
+
+        <addForeignKeyConstraint baseTableName="meter_value" baseColumnNames="meter_id"
+                                 referencedTableName="meter" referencedColumnNames="id" constraintName="FK_meter_value_meter"/>
+
+        <addForeignKeyConstraint baseTableName="person" baseColumnNames="rental_contract_id"
+                                 referencedTableName="rental_contract" referencedColumnNames="id" constraintName="FK_person_contract"/>
+
+        <addForeignKeyConstraint baseTableName="rental_contract" baseColumnNames="rental_property_id"
+                                 referencedTableName="rental_property" referencedColumnNames="id" constraintName="FK_rental_contract_property"/>
+
+        <addForeignKeyConstraint baseTableName="rental_property" baseColumnNames="house_id"
+                                 referencedTableName="rental_property" referencedColumnNames="id" constraintName="FK_rental_property_house"/>
+
+        <addForeignKeyConstraint baseTableName="utility_cost" baseColumnNames="utility_statement_id"
+                                 referencedTableName="utility_statement" referencedColumnNames="id" constraintName="FK_utility_cost_statement"/>
+
+        <addForeignKeyConstraint baseTableName="utility_statement" baseColumnNames="rental_property_id"
+                                 referencedTableName="rental_property" referencedColumnNames="id" constraintName="FK_utility_statement_property"/>
+
     </changeSet>
-
-    <!-- Foreign Keys -->
-    <changeSet id="add-foreign-keys" author="dev">
-        <addForeignKeyConstraint baseTableName="apartment"
-                                 baseColumnNames="house_id"
-                                 referencedTableName="house"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_apartment_house"/>
-
-        <addForeignKeyConstraint baseTableName="apartment"
-                                 baseColumnNames="id"
-                                 referencedTableName="rental_property"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_apartment_rental_property"/>
-
-        <addForeignKeyConstraint baseTableName="rental_contract"
-                                 baseColumnNames="rental_property_id"
-                                 referencedTableName="rental_property"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_contract_property"/>
-
-        <addForeignKeyConstraint baseTableName="person"
-                                 baseColumnNames="rental_contract_id"
-                                 referencedTableName="rental_contract"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_person_contract"/>
-
-        <addForeignKeyConstraint baseTableName="utility_cost"
-                                 baseColumnNames="utility_statement_id"
-                                 referencedTableName="utility_statement"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_cost_statement"/>
-
-        <addForeignKeyConstraint baseTableName="utility_statement"
-                                 baseColumnNames="rental_property_id"
-                                 referencedTableName="rental_property"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_statement_property"/>
-
-        <addForeignKeyConstraint baseTableName="attachment"
-                                 baseColumnNames="utility_cost_id"
-                                 referencedTableName="utility_cost"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_attachment_cost"/>
-
-        <addForeignKeyConstraint baseTableName="finalized_attachment"
-                                 baseColumnNames="finalized_utility_cost_id"
-                                 referencedTableName="finalized_utility_cost"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_finalized_attachment_cost"/>
-
-        <addForeignKeyConstraint baseTableName="finalized_utility_cost"
-                                 baseColumnNames="finalized_statement_id"
-                                 referencedTableName="finalized_utility_statement"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_finalized_cost_statement"/>
-
-        <addForeignKeyConstraint baseTableName="finalized_utility_statement"
-                                 baseColumnNames="rental_property_id"
-                                 referencedTableName="rental_property"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_finalized_statement_property"/>
-
-        <addForeignKeyConstraint baseTableName="finalized_utility_statement"
-                                 baseColumnNames="utility_statement_id"
-                                 referencedTableName="utility_statement"
-                                 referencedColumnNames="id"
-                                 constraintName="FK_finalized_statement_original"/>
-    </changeSet>
-
 </databaseChangeLog>

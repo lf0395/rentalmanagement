@@ -13,8 +13,12 @@ public class FinalizedUtilityCost {
     @ManyToOne
     @JoinColumn(name = "finalized_statement_id")
     private FinalizedUtilityStatement finalizedStatement;
+    @Column(name = "total_cost")
     private double totalCost;
+    @Column(name = "individual_share")
     private double individualShare;
+    @Column(name = "billing_type")
+    @Enumerated
     private BillingType billingType;
     @OneToMany(mappedBy = "finalizedUtilityCost", cascade = CascadeType.ALL)
     private List<FinalizedAttachment> finalizedAttachments;

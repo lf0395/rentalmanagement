@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin
 @RequestMapping("utility-costs")
 class UtilityCostController {
     private final UtilityCostRepository repository;
@@ -34,5 +35,10 @@ class UtilityCostController {
         cost.setUtilityStatement(statementRepository.findById(cost.getUtilityStatement().getId())
                 .orElseThrow(() -> new RuntimeException("Utility Statement not found")));
         return repository.save(cost);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 }
