@@ -41,4 +41,16 @@ class UtilityCostController {
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }
+
+    @PutMapping("/{id}")
+    public UtilityCost update(@PathVariable Long id, @RequestBody UtilityCost cost) {
+        UtilityCost dbCost = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utility Cost not found"));
+        dbCost.setPrice(cost.getPrice());
+        dbCost.setName(cost.getName());
+        dbCost.setBillable(cost.isBillable());
+        dbCost.setBillingType(cost.getBillingType());
+        dbCost.setAttachments(cost.getAttachments());
+        return repository.save(dbCost);
+    }
 }

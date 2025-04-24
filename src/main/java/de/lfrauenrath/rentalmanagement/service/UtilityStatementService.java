@@ -1,9 +1,7 @@
 package de.lfrauenrath.rentalmanagement.service;
 
 import de.lfrauenrath.rentalmanagement.entity.*;
-import de.lfrauenrath.rentalmanagement.repository.FinalizedUtilityStatementRepository;
-import de.lfrauenrath.rentalmanagement.repository.RentalContractRepository;
-import de.lfrauenrath.rentalmanagement.repository.UtilityStatementRepository;
+import de.lfrauenrath.rentalmanagement.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -19,19 +17,24 @@ public class UtilityStatementService {
     private final UtilityStatementRepository utilityStatementRepository;
     private final FinalizedUtilityStatementRepository finalizedUtilityStatementRepository;
     private final RentalPropertyService rentalPropertyService;
+    private final RentService rentService;
     private final RentalContractRepository rentalContractRepository;
     private final MeterService meterService;
+    private final RentalPropertyRepository rentalPropertyRepository;
 
     public UtilityStatementService(UtilityStatementRepository utilityStatementRepository,
                                    FinalizedUtilityStatementRepository finalizedUtilityStatementRepository,
                                    RentalPropertyService rentalPropertyService,
+                                   RentService rentService,
                                    RentalContractRepository rentalContractRepository,
-                                   MeterService meterService) {
+                                   MeterService meterService, RentalPropertyRepository rentalPropertyRepository) {
         this.utilityStatementRepository = utilityStatementRepository;
         this.finalizedUtilityStatementRepository = finalizedUtilityStatementRepository;
         this.rentalPropertyService = rentalPropertyService;
+        this.rentService = rentService;
         this.rentalContractRepository = rentalContractRepository;
         this.meterService = meterService;
+        this.rentalPropertyRepository = rentalPropertyRepository;
     }
 
     public void finalizeStatement(Long statementId) {
@@ -44,9 +47,80 @@ public class UtilityStatementService {
             if (!((House) rentalProperty).getApartments().isEmpty()) {
                 handleMultipleRentedApartmentsInHouse(statement, (House) rentalProperty);
             } else {
+                handleSingleRentedProperty(statement, rentalProperty);
             }
         } else {
+            handleSingleRentedProperty(statement, rentalProperty);
         }
+    }
+
+    private void handleSingleRentedProperty(UtilityStatement statement, RentalProperty rentalProperty) {
+        double overallSquareMeters = rentalProperty.getLivingArea();
+        List<RentalContract> rentalContracts = rentalContractRepository.findValidContracts(rentalProperty, LocalDate.of(statement.getYear(), 1, 1), LocalDate.of(statement.getYear(), 12, 31));
+        LocalDate firstDayOfYear = LocalDate.of(statement.getYear(), 1, 1);
+        LocalDate lastDayOfYear = LocalDate.of(statement.getYear(), 12, 31);
+        double totalPersonMonths = rentalContracts.stream()
+                .mapToDouble(contract -> calculateTotalPersonMonths(contract, firstDayOfYear, lastDayOfYear))
+                .sum();
+        for (RentalContract contract : rentalContracts) {
+            FinalizedUtilityStatement finalizedUtilityStatement = new FinalizedUtilityStatement();
+            finalizedUtilityStatement.setUtilityStatement(statement);
+            finalizedUtilityStatement.setRentalContract(contract);
+            finalizedUtilityStatement.setBreakdown("Nebenkostenaufstellung " + statement.getYear());
+            finalizedUtilityStatement.setFinalizedUtilityCosts(new ArrayList<>());
+            long daysInYear = 365;
+            if (LocalDate.of(statement.getYear(), 1, 1).isLeapYear()) {
+                daysInYear = 366;
+            }
+            ;
+            LocalDate tempStartDate = contract.getStartDate();
+            LocalDate tempEndDate = contract.getEndDate();
+            if (tempStartDate.isBefore(firstDayOfYear) ||
+                    tempStartDate.isEqual(firstDayOfYear)) {
+                tempStartDate = firstDayOfYear;
+            }
+            if (tempEndDate == null ||
+                    tempEndDate.isAfter(lastDayOfYear) ||
+                    tempEndDate.isEqual(lastDayOfYear)) {
+                tempEndDate = lastDayOfYear;
+            }
+            long days = ChronoUnit.DAYS.between(tempStartDate, tempEndDate) + 1;
+            for (UtilityCost cost : statement.getUtilityCosts()) {
+                FinalizedUtilityCost finalizedUtilityCost = new FinalizedUtilityCost();
+                finalizedUtilityStatement.getFinalizedUtilityCosts().add(finalizedUtilityCost);
+                finalizedUtilityCost.setName(cost.getName());
+                finalizedUtilityCost.setTotalCost(cost.getPrice());
+                finalizedUtilityCost.setFinalizedStatement(finalizedUtilityStatement);
+                finalizedUtilityCost.setBillingType(cost.getBillingType());
+                for (Attachment attachment : cost.getAttachments()) {
+                    FinalizedAttachment finalizedAttachment = new FinalizedAttachment();
+                    finalizedAttachment.setData(attachment.getData());
+                    finalizedAttachment.setFinalizedUtilityCost(finalizedUtilityCost);
+                    finalizedAttachment.setFileName(attachment.getFileName());
+                    finalizedAttachment.setFileType(attachment.getFileType());
+                }
+                switch (cost.getBillingType()) {
+                    case SQUARE_METERS:
+                        finalizedUtilityCost.setIndividualShare(cost.getPrice() / overallSquareMeters * contract.getRentalProperty().getLivingArea() / daysInYear * days);
+                        break;
+                    case PERSONS:
+                        finalizedUtilityCost.setIndividualShare(cost.getPrice() / totalPersonMonths * calculateTotalPersonMonths(contract, tempStartDate, tempEndDate));
+                        break;
+                    case CONSUMPTION:
+                        double consumption = meterService.calculateConsumption(contract.getRentalProperty(),
+                                tempStartDate, tempEndDate, cost.getMeterType());
+                        finalizedUtilityCost.setIndividualShare(cost.getPrice() / cost.getConsumption() * consumption);
+                        break;
+                    case FLAT_RATE:
+                        finalizedUtilityCost.setIndividualShare(cost.getPrice() / daysInYear * days);
+                        break;
+                }
+            }
+            finalizedUtilityStatement.setIndividualCost(finalizedUtilityStatement.getFinalizedUtilityCosts().stream().mapToDouble(FinalizedUtilityCost::getIndividualShare).sum());
+            finalizedUtilityStatementRepository.save(finalizedUtilityStatement);
+        }
+        statement.setFinalized(true);
+        utilityStatementRepository.save(statement);
     }
 
     private void handleMultipleRentedApartmentsInHouse(UtilityStatement statement, House house) {
@@ -88,6 +162,7 @@ public class UtilityStatementService {
                 FinalizedUtilityCost finalizedUtilityCost = new FinalizedUtilityCost();
                 finalizedUtilityStatement.getFinalizedUtilityCosts().add(finalizedUtilityCost);
                 finalizedUtilityCost.setTotalCost(cost.getPrice());
+                finalizedUtilityCost.setName(cost.getName());
                 finalizedUtilityCost.setFinalizedStatement(finalizedUtilityStatement);
                 finalizedUtilityCost.setBillingType(cost.getBillingType());
                 for (Attachment attachment : cost.getAttachments()) {
@@ -115,6 +190,8 @@ public class UtilityStatementService {
                 }
             }
             finalizedUtilityStatement.setIndividualCost(finalizedUtilityStatement.getFinalizedUtilityCosts().stream().mapToDouble(FinalizedUtilityCost::getIndividualShare).sum());
+            finalizedUtilityStatement.setPaymentInAdvance(rentService.calculateAdvancePayment(contract, tempStartDate, tempEndDate));
+            finalizedUtilityStatement.setDifference(finalizedUtilityStatement.getPaymentInAdvance() - finalizedUtilityStatement.getIndividualCost());
             finalizedUtilityStatementRepository.save(finalizedUtilityStatement);
         }
         statement.setFinalized(true);

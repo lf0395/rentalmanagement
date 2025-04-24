@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class MeterValue {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "measure_date")
     private LocalDate measureDate;

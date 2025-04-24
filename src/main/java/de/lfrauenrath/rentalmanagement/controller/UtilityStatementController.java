@@ -36,7 +36,8 @@ public class UtilityStatementController {
 
     @PostMapping
     public UtilityStatement create(@RequestBody UtilityStatement statement) {
-        statement.setRentalProperty(rentalPropertyRepository.findById(statement.getRentalProperty().getId())
+        UtilityStatement utilityStatement = new UtilityStatement();
+        utilityStatement.setRentalProperty(rentalPropertyRepository.findById(statement.getRentalProperty().getId())
                 .orElseThrow(() -> new RuntimeException("Rental Property not found")));
         return repository.save(statement);
     }

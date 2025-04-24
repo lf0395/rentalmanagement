@@ -26,7 +26,7 @@ public class RentalContract {
     @JoinColumn(name = "rental_contract_id")
     private List<Person> tenants = new ArrayList<>();
     @OneToMany
-    @JoinColumn(name = "finalized_utility_statement_id")
+    @JoinColumn(name = "rental_contract_id")
     private List<FinalizedUtilityStatement> finalizedUtilityStatements = new ArrayList<>();
 
 

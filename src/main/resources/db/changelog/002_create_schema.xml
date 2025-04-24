@@ -32,6 +32,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
             </column>
+            <column name="name" type="VARCHAR(255)"/>
             <column name="billing_type" type="SMALLINT"/>
             <column name="individual_share" type="FLOAT"/>
             <column name="total_cost" type="FLOAT"/>
@@ -45,6 +46,8 @@
             </column>
             <column name="breakdown" type="VARCHAR(255)"/>
             <column name="individual_cost" type="FLOAT"/>
+            <column name="payment_in_advance" type="FLOAT"/>
+            <column name="difference" type="FLOAT"/>
             <column name="rental_contract_id" type="BIGINT"/>
             <column name="utility_statement_id" type="BIGINT"/>
             <column name="finalized_utility_statement_id" type="BIGINT"/>
@@ -62,19 +65,13 @@
 
         <!-- Table: meter_value -->
         <createTable tableName="meter_value">
-            <column name="id" type="BIGINT"/>
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
             <column name="measure_date" type="DATE"/>
             <column name="value" type="FLOAT"/>
             <column name="meter_id" type="BIGINT"/>
         </createTable>
-
-        <createTable tableName="meter_value_SEQ">
-            <column name="next_val" type="BIGINT"/>
-        </createTable>
-
-        <insert tableName="meter_value_SEQ">
-            <column name="next_val" value="1"/>
-        </insert>
 
         <!-- Table: person -->
         <createTable tableName="person">

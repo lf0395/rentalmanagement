@@ -1,5 +1,6 @@
 package de.lfrauenrath.rentalmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -10,8 +11,11 @@ public class FinalizedUtilityCost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "name")
+    private String name;
     @ManyToOne
     @JoinColumn(name = "finalized_statement_id")
+    @JsonIgnore
     private FinalizedUtilityStatement finalizedStatement;
     @Column(name = "total_cost")
     private double totalCost;
@@ -29,6 +33,14 @@ public class FinalizedUtilityCost {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public FinalizedUtilityStatement getFinalizedStatement() {
