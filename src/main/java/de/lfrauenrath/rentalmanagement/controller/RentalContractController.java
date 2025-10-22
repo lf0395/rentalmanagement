@@ -5,6 +5,7 @@ import de.lfrauenrath.rentalmanagement.entity.RentalContract;
 import de.lfrauenrath.rentalmanagement.repository.RentalContractRepository;
 import de.lfrauenrath.rentalmanagement.repository.RentalPropertyRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,16 +28,19 @@ public class RentalContractController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public List<RentalContract> getAll() {
         return repository.findAll();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public Optional<RentalContract> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('admin')")
     public void deleteById(@PathVariable Long id, @RequestBody Map<String, String> body) {
         RentalContract contract = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mietvertrag nicht gefunden"));
@@ -51,6 +55,7 @@ public class RentalContractController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('admin')")
     public RentalContract create(@RequestBody RentalContract contract) {
         RentalContract dbContract;
 

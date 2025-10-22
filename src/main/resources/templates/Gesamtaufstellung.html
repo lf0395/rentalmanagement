@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Rechnung</title>
+        <style>
+            body { font-family: Arial, sans-serif; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; }
+            th { background-color: #f2f2f2; }
+        </style>
+    </head>
+    <body>
+        <h1>Nebenkostenaufstellung <span th:text="${overview.year}"></span></h1>
+        <p th:text="${overview.rentalProperty.fullAddress}"></p>
+        <h2>Übersicht der Mieteinheiten</h2>
+        <br></br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bezeichnung</th>
+                    <th>Wohnfläche</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="apartment : ${overview.rentalProperty.apartments}">
+                    <td th:text="${apartment.name}"></td>
+                    <td th:text="${apartment.livingArea}"></td>
+                </tr>
+            </tbody>
+        </table>
+        <br></br>
+        <h2>Übersicht der Kosten</h2>
+        <br></br>
+        <p>Gesamtkosten <span th:text="${overview.totalCost}"></span></p>
+        <br></br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Abrechnungsart</th>
+                    <th>Abrechenbar</th>
+                    <th>Preis</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="utilityCost : ${overview.utilityCosts}">
+                    <td th:text="${utilityCost.name}"></td>
+                    <td th:text="${utilityCost.billingType}"></td>
+                    <td th:text="${utilityCost.isBillable}"></td>
+                    <td th:text="${utilityCost.price}"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="page-break-before: always;" th:each="finalizedStatement: ${finalizedStatements}">
+            <div th:insert="EinzelAbrechnung.html"></div>
+        </div>
+    </body>
+</html>

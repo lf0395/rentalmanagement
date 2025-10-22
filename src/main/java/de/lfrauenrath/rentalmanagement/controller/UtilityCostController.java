@@ -3,6 +3,7 @@ package de.lfrauenrath.rentalmanagement.controller;
 import de.lfrauenrath.rentalmanagement.entity.UtilityCost;
 import de.lfrauenrath.rentalmanagement.repository.UtilityCostRepository;
 import de.lfrauenrath.rentalmanagement.repository.UtilityStatementRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,16 +22,19 @@ class UtilityCostController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public List<UtilityCost> getAll() {
         return repository.findAll();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public Optional<UtilityCost> getById(@PathVariable Long id) {
         return repository.findById(id);
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public UtilityCost create(@RequestBody UtilityCost cost) {
         cost.setUtilityStatement(statementRepository.findById(cost.getUtilityStatement().getId())
                 .orElseThrow(() -> new RuntimeException("Utility Statement not found")));
@@ -38,11 +42,13 @@ class UtilityCostController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public UtilityCost update(@PathVariable Long id, @RequestBody UtilityCost cost) {
         UtilityCost dbCost = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utility Cost not found"));

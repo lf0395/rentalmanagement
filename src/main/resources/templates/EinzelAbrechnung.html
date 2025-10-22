@@ -1,0 +1,78 @@
+<h3>Mietverhältnis</h3>
+<p th:text="${finalizedStatement.rentalContract.endDate != null ? finalizedStatement.rentalContract.startDate + ' - ' + finalizedStatement.rentalContract.endDate : finalizedStatement.rentalContract.startDate + ' - offen'}"></p>
+<br></br>
+<h3>Mieter</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Geburtsdatum</th>
+        <th>E-Mail</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="tenant : ${finalizedStatement.rentalContract.tenants}">
+        <td th:text="${tenant.firstName} + ' ' + ${tenant.lastName}"></td>
+        <td th:text="${tenant.birthDate}"></td>
+        <td th:text="${tenant.email}"></td>
+    </tr>
+    </tbody>
+</table>
+<br></br>
+<h3>Miete</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Zeitraum</th>
+        <th>Kaltmiete</th>
+        <th>Nebenkosten</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="rent : ${finalizedStatement.rentalContract.rents}">
+        <td th:text="${rent.endDate != null ? rent.startDate + ' - ' + rent.endDate : rent.startDate + ' - offen'}"></td>
+        <td th:text="${rent.coldRent}"></td>
+        <td th:text="${rent.additionalCosts}"></td>
+    </tr>
+    </tbody>
+</table>
+<br></br>
+<h3>Kostenaufstellung</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Gesamtkosten</th>
+        <th>Anteil</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="finalizedCost : ${finalizedStatement.finalizedUtilityCosts}">
+        <td th:text="${finalizedCost.name}"></td>
+        <td th:text="${finalizedCost.totalCost}"></td>
+        <td th:text="${finalizedCost.individualShare}"></td>
+    </tr>
+    </tbody>
+</table>
+<br></br>
+<h3>Zusammenfassung</h3>
+<table>
+    <tbody>
+    <tr>
+        <td>Gesamtkosten</td>
+        <td th:text="${overview.totalCost}"></td>
+    </tr>
+    <tr>
+        <td>Anteil</td>
+        <td th:text="${finalizedStatement.individualCost}"></td>
+    </tr>
+    <tr>
+        <td>Vorauszahlungen</td>
+        <td th:text="${finalizedStatement.paymentInAdvance}"></td>
+    </tr>
+    <tr>
+        <td>Differenz</td>
+        <td th:text="${finalizedStatement.difference}"></td>
+    </tr>
+    </tbody>
+</table>

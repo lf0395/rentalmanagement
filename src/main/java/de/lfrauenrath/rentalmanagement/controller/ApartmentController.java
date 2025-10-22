@@ -6,6 +6,7 @@ import de.lfrauenrath.rentalmanagement.repository.ApartmentRepository;
 import de.lfrauenrath.rentalmanagement.repository.HouseRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,16 +25,19 @@ public class ApartmentController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public ResponseEntity<List<Apartment>> getAllApartments() {
         return ResponseEntity.ok(apartmentRepository.findAll());
     }
 
     @GetMapping("/distinct")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public ResponseEntity<List<Apartment>> getDistinctApartments() {
         return ResponseEntity.ok(apartmentRepository.findByHouseIsNull());
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('admin')")
     public ResponseEntity<Apartment> createApartment(@RequestBody Apartment apartment) {
         House house = apartment.getHouse();
         if (house == null && apartment.getHouseId() != null) {
@@ -45,6 +49,7 @@ public class ApartmentController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('admin')")
     public ResponseEntity<Apartment> updateApartment(@PathVariable Long id, @RequestBody Apartment apartment) {
         Apartment dbApartment = apartmentRepository.findById(id).orElseThrow();
         dbApartment.setLivingArea(apartment.getLivingArea());
@@ -59,6 +64,7 @@ public class ApartmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('admin')")
     public ResponseEntity<Void> deleteApartment(@PathVariable Long id) {
         apartmentRepository.deleteById(id);
         return ResponseEntity.noContent().build();

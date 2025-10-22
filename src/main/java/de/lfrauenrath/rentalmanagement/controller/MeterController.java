@@ -7,6 +7,7 @@ import de.lfrauenrath.rentalmanagement.repository.MeterValueRepository;
 import de.lfrauenrath.rentalmanagement.repository.RentalPropertyRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +31,14 @@ public class MeterController {
 
     /** 📌 Alle Zähler abrufen **/
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public List<Meter> getAllMeters() {
         return meterRepository.findAll();
     }
 
     /** 📌 Einzelnen Zähler abrufen **/
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public ResponseEntity<Meter> getMeterById(@PathVariable Long id) {
         return meterRepository.findById(id)
                 .map(ResponseEntity::ok)
@@ -44,6 +47,7 @@ public class MeterController {
 
     /** 📌 Neuen Zähler erstellen **/
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('admin')")
     public ResponseEntity<Meter> createMeter(@RequestBody Meter meter) {
         meter.setRentalProperty(rentalPropertyRepository.findById(meter.getRentalProperty().getId())
                 .orElseThrow(() -> new RuntimeException("Rental Property not found")));
@@ -52,6 +56,7 @@ public class MeterController {
 
     /** 📌 Zähler aktualisieren **/
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('admin')")
     public ResponseEntity<Meter> updateMeter(@PathVariable Long id, @RequestBody Meter updatedMeter) {
         return meterRepository.findById(id).map(existingMeter -> {
             existingMeter.setType(updatedMeter.getType());
@@ -62,6 +67,7 @@ public class MeterController {
 
     /** 📌 Zähler löschen **/
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('admin')")
     public ResponseEntity<Void> deleteMeter(@PathVariable Long id) {
         if (!meterRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -72,6 +78,7 @@ public class MeterController {
 
     /** 📌 Alle Werte eines Zählers abrufen **/
     @GetMapping("/{id}/values")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public ResponseEntity<List<MeterValue>> getMeterValues(@PathVariable Long id) {
         Optional<Meter> meter = meterRepository.findById(id);
         return meter.map(value -> ResponseEntity.ok(value.getMeterValueList()))
@@ -80,6 +87,7 @@ public class MeterController {
 
     /** 📌 Neuen Messwert hinzufügen **/
     @PostMapping("/{id}/values")
+    @PreAuthorize("hasAnyAuthority('user','admin')")
     public ResponseEntity<MeterValue> addMeterValue(@PathVariable Long id, @RequestBody MeterValue meterValue) {
         return meterRepository.findById(id).map(meter -> {
             meterValue.setMeter(meter);

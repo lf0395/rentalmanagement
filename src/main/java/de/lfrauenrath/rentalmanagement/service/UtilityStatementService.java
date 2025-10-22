@@ -16,31 +16,34 @@ import java.util.List;
 public class UtilityStatementService {
     private final UtilityStatementRepository utilityStatementRepository;
     private final FinalizedUtilityStatementRepository finalizedUtilityStatementRepository;
-    private final RentalPropertyService rentalPropertyService;
     private final RentService rentService;
     private final RentalContractRepository rentalContractRepository;
     private final MeterService meterService;
-    private final RentalPropertyRepository rentalPropertyRepository;
+    private final PdfService pdfService;
 
     public UtilityStatementService(UtilityStatementRepository utilityStatementRepository,
                                    FinalizedUtilityStatementRepository finalizedUtilityStatementRepository,
-                                   RentalPropertyService rentalPropertyService,
                                    RentService rentService,
                                    RentalContractRepository rentalContractRepository,
-                                   MeterService meterService, RentalPropertyRepository rentalPropertyRepository) {
+                                   MeterService meterService,
+                                   PdfService pdfService) {
         this.utilityStatementRepository = utilityStatementRepository;
         this.finalizedUtilityStatementRepository = finalizedUtilityStatementRepository;
-        this.rentalPropertyService = rentalPropertyService;
         this.rentService = rentService;
         this.rentalContractRepository = rentalContractRepository;
         this.meterService = meterService;
-        this.rentalPropertyRepository = rentalPropertyRepository;
+        this.pdfService = pdfService;
     }
 
     public void finalizeStatement(Long statementId) {
         UtilityStatement statement = utilityStatementRepository.findById(statementId)
                 .orElseThrow(() -> new RuntimeException("Utility statement not found"));
 
+        if (!finalizedUtilityStatementRepository.findByUtilityStatement(statement).isEmpty()) {
+            throw new RuntimeException(String.format("Die Nebenkostenaufstellung für %s im Jahr %d wurde bereits abgerechnet.",
+                    statement.getRentalProperty().getFullAddress(),
+                    statement.getYear()));
+        }
         RentalProperty rentalProperty = statement.getRentalProperty();
 
         if (rentalProperty instanceof House) {
